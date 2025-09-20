@@ -13,18 +13,27 @@ import torch
 from annotator.teed.ted import TED  # TEED architecture
 from einops import rearrange
 from modules import devices
+from modules.safe import unsafe_torch_load
 from annotator.util import load_model, safe_step
 from annotator.annotator_path import models_path
 
 
-class TEEDDector:
+class TEEDDetector:
     """https://github.com/xavysp/TEED"""
 
     model_dir = os.path.join(models_path, "TEED")
 
-    def __init__(self):
+    def __init__(self, mteed: bool = False):
         self.device = devices.get_device_for("controlnet")
         self.model = TED().to(self.device).eval()
+
+        if mteed:
+            self.load_mteed_model()
+        else:
+            self.load_teed_model()
+
+    def load_teed_model(self):
+        """Load vanilla TEED model"""
         remote_url = os.environ.get(
             "CONTROLNET_TEED_MODEL_URL",
             "https://huggingface.co/bdsqlsz/qinglong_controlnet-lllite/resolve/main/Annotators/7_model.pth",
@@ -32,7 +41,17 @@ class TEEDDector:
         model_path = load_model(
             "7_model.pth", remote_url=remote_url, model_dir=self.model_dir
         )
-        self.model.load_state_dict(torch.load(model_path))
+        self.model.load_state_dict(unsafe_torch_load(model_path))
+
+    def load_mteed_model(self):
+        """Load MTEED model for Anyline"""
+        remote_url = (
+            "https://huggingface.co/TheMistoAI/MistoLine/resolve/main/Anyline/MTEED.pth"
+        )
+        model_path = load_model(
+            "MTEED.pth", remote_url=remote_url, model_dir=self.model_dir
+        )
+        self.model.load_state_dict(unsafe_torch_load(model_path))
 
     def unload_model(self):
         if self.model is not None:
