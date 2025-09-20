@@ -60,6 +60,7 @@ class PreprocessorAnyline(Preprocessor):
         super().__init__()
         self.name="softedge_anyline"
         self.tags = ["SoftEdge"]
+        self.sorting_priority: int = -100
         self.slider_resolution = PreprocessorParameter(
             label="Resolution",
             minimum=64,

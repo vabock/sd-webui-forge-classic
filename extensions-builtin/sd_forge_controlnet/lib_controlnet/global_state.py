@@ -88,7 +88,7 @@ def get_preprocessor(name: str):
 def get_sorted_preprocessors() -> dict:
     results = OrderedDict({"None": supported_preprocessors["None"]})
     preprocessors = [p for (k, p) in supported_preprocessors.items() if k != "None"]
-    preprocessors = sorted(preprocessors, key=lambda mdl: mdl.name)
+    preprocessors = sorted(preprocessors, key=lambda mdl: (-mdl.sorting_priority, mdl.name))
     for p in preprocessors:
         results[p.name] = p
     return results
